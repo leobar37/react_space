@@ -39,9 +39,20 @@ import { convertChildrenToColumns } from "./utils";
 // make data
 type ChildrenFunc = (node: ReactChildren) => ReactNode;
 
+export type TableInstanceProps = UseGlobalFiltersInstanceProps<any> &
+  UseTableInstanceProps<any>;
+
+export type FilterGlobalProps = Pick<
+  UseGlobalFiltersInstanceProps<any>,
+  "preGlobalFilteredRows" | "setGlobalFilter"
+> & {
+  globalFilter: any;
+};
+
 export type TableProps = {
   data: any[];
   rowStyles?: SystemStyleObject | ChildrenFunc;
+  onTable?: (table: TableInstanceProps) => void;
 } & CTableProps;
 
 type ColTableProps = {} & Column & UseFiltersColumnOptions<any>;
@@ -57,6 +68,7 @@ export const Table: FunctionComponent<TableProps> = ({
   data,
   children,
   rowStyles,
+  onTable,
   ...rest
 }) => {
   const columns = React.useMemo(
@@ -69,6 +81,14 @@ export const Table: FunctionComponent<TableProps> = ({
   if (typeof rowStyles == "object") {
     stylesRow = rowStyles;
   }
+
+  useEffect(() => {
+    console.log("called on tablle");
+    if (onTable) {
+      onTable(props as any as TableInstanceProps);
+    }
+  }, [props, onTable]);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -79,8 +99,7 @@ export const Table: FunctionComponent<TableProps> = ({
     state,
     preGlobalFilteredRows,
     setGlobalFilter,
-  } = props as any as UseGlobalFiltersInstanceProps<any> &
-    UseTableInstanceProps<any>;
+  } = props as any as TableInstanceProps;
 
   return (
     <ChacrakTable {...getTableProps()} {...rest}>

@@ -26,10 +26,8 @@ export enum DefaultFilters {
 export const convertChildrenToColumns = (children: React.ReactChildren) => {
   return toArray(children)
     .filter((node) => React.isValidElement(node))
+    .filter((node) => (node?.type as any).name == "ColTable")
     .map(({ key, props, type }: React.ReactElement) => {
-      console.log("los a type");
-      console.log((type as any)());
-
       const { children, ...restProps } = props;
       const column = {
         ...restProps,
@@ -38,6 +36,10 @@ export const convertChildrenToColumns = (children: React.ReactChildren) => {
     }) as unknown as Column[];
 };
 
+/**
+ * Table utils
+ *
+ */
 export const prepareCellProps = <D extends object>(props: CellProps<D>) => {
   return {
     ...props,
