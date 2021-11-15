@@ -17,75 +17,58 @@ import {
   TableInstance,
   CellProps,
   Renderer,
+  FilterProps,
+  UseFiltersInstanceProps,
+  UseTableInstanceProps,
+  UseGlobalFiltersInstanceProps,
+  UseFiltersColumnOptions,
 } from "react-table";
+
+/**
+ * see : https://github.dev/react-component/util
+ */
 import React, {
   FunctionComponent,
   ReactChildren,
   ReactNode,
   useMemo,
   useState,
+  useEffect,
 } from "react";
-
+import { convertChildrenToColumns } from "./utils";
 // make data
 type ChildrenFunc = (node: ReactChildren) => ReactNode;
-
-type TableColumn = {
-  //  original column used by react-taBLE
-  column: Column;
-};
 
 export type TableProps = {
   data: any[];
   rowStyles?: SystemStyleObject | ChildrenFunc;
 } & CTableProps;
 
-type TableContextProps = {
-  pushColumn: (col: TableColumn) => void;
-};
+type ColTableProps = {} & Column & UseFiltersColumnOptions<any>;
 
-const TableContext = React.createContext<TableContextProps>(undefined!);
-
-const ProviderTable = TableContext.Provider;
-
-const useTableContext = () => {
-  const content = React.useContext(TableContext);
-  if (!content) {
-    throw new Error("Undefined");
-  }
-  return content;
-};
-
-// tr styles
-// custom cell rendersÇ
-type ColTableProps = {
-  title: string;
-  name: string;
-  cell?: Renderer<CellProps<any, any>>;
-  id?: string;
-};
-
-export const ColTable = (props: ColTableProps) => {
-  const { pushColumn } = useTableContext();
-
-  console.log(pushColumn);
-
-  pushColumn({
-    column: {
-      Cell: props.cell,
-      Header: props.name,
-      accessor: props.key,
-      id: props.id,
-    },
-  });
+/**
+ * This is a syntatic sugar for 'columns' prop
+ */
+export const ColTable: FunctionComponent<ColTableProps> = (props) => {
   return null;
 };
 
 export const Table: FunctionComponent<TableProps> = ({
   data,
   children,
+  rowStyles,
   ...rest
 }) => {
-  const [columns, setColumns] = useState<Column[]>([]);
+  const columns = React.useMemo(
+    () => convertChildrenToColumns(children as ReactChildren),
+    [children]
+  );
+
+  const props = useTable({ data, columns }, useFilters, useGlobalFilter);
+  let stylesRow: SystemStyleObject | null = null;
+  if (typeof rowStyles == "object") {
+    stylesRow = rowStyles;
+  }
   const {
     getTableProps,
     getTableBodyProps,
@@ -94,50 +77,44 @@ export const Table: FunctionComponent<TableProps> = ({
     prepareRow,
     getHooks,
     state,
-  } = useTable({ data, columns }, useFilters, useGlobalFilter);
-
-  const pushColumn = (col: TableColumn) => {
-    columns.push(col.column);
-    setColumns(columns);
-  };
+    preGlobalFilteredRows,
+    setGlobalFilter,
+  } = props as any as UseGlobalFiltersInstanceProps<any> &
+    UseTableInstanceProps<any>;
 
   return (
-    <ProviderTable value={{ pushColumn: pushColumn }}>
-      <ChacrakTable {...getTableProps()} {...rest}>
-        <Thead>
-          {headerGroups.map((headerGroup, i) => {
-            return (
-              <Tr {...headerGroup.getHeaderGroupProps()} key={i}>
-                {headerGroup.headers.map((column, j) => {
-                  return (
-                    <Th {...column.getHeaderProps()} key={j}>
-                      {column.render("Header")}
-                    </Th>
-                  );
-                })}
-              </Tr>
-            );
-          })}
-        </Thead>
-        <Tbody {...getTableBodyProps()}>
-          {rows.map((row, i) => {
-            prepareRow(row);
-            return (
-              <Tr {...row.getRowProps()} key={i}>
-                {row.cells.map((cell, j) => {
-                  return (
-                    <Td {...cell.getCellProps()} key={j}>
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })}
-              </Tr>
-            );
-          })}
-          {/* Registers */}
-        </Tbody>
-      </ChacrakTable>
-      {children}
-    </ProviderTable>
+    <ChacrakTable {...getTableProps()} {...rest}>
+      <Thead>
+        {headerGroups.map((headerGroup, i) => {
+          return (
+            <Tr {...headerGroup.getHeaderGroupProps()} key={i}>
+              {headerGroup.headers.map((column, j) => {
+                return (
+                  <Th {...column.getHeaderProps()} key={j}>
+                    {column.render("Header")}
+                  </Th>
+                );
+              })}
+            </Tr>
+          );
+        })}
+      </Thead>
+      <Tbody {...getTableBodyProps()}>
+        {rows.map((row, i) => {
+          prepareRow(row);
+          return (
+            <Tr sx={stylesRow || {}} {...row.getRowProps()} key={i}>
+              {row.cells.map((cell, j) => {
+                return (
+                  <Td {...cell.getCellProps()} key={j}>
+                    {cell.render("Cell")}
+                  </Td>
+                );
+              })}
+            </Tr>
+          );
+        })}
+      </Tbody>
+    </ChacrakTable>
   );
 };
