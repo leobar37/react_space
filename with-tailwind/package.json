@@ -1,0 +1,35 @@
+{
+  "name": "with-tailwind",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "axios": "^0.24.0",
+    "classnames": "^2.3.1",
+    "lodash": "^4.17.21",
+    "next": "12.0.4",
+    "purgecss-from-js": "^1.0.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-query": "^3.34.0",
+    "sass": "^1.44.0",
+    "tailwindcss-classnames": "^2.2.5"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.177",
+    "@types/node": "16.11.10",
+    "@types/react": "17.0.37",
+    "autoprefixer": "^10.4.0",
+    "eslint": "7",
+    "eslint-config-next": "12.0.4",
+    "postcss": "^8.4.4",
+    "postcss-easy-import": "^3.0.0",
+    "postcss-nested": "^5.0.6",
+    "tailwindcss": "^2.2.19",
+    "typescript": "4.5.2"
+  }
+}

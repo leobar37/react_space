@@ -1,0 +1,17 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@variants active {
+  .tap {
+    transform: scale(1.08);
+    color: white !important;
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .centered {
+    @apply flex justify-center items-center;
+  }
+}
